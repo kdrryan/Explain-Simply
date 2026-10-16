@@ -1,5 +1,5 @@
 import React from 'react';
-import { ArrowDown, ArrowUpRight, Bot, Code2, Github, Layers3, Sparkles, Terminal } from 'lucide-react';
+import { ArrowDown, ArrowUpRight, Bot, Code2, Github, Layers3, Terminal } from 'lucide-react';
 
 const projects = [
   {
@@ -21,9 +21,8 @@ export default function Portfolio() {
       </div>
 
       <header className="relative z-10 mx-auto flex max-w-7xl items-center justify-between px-5 py-5 sm:px-8">
-        <a href="#home" className="flex items-center gap-3" aria-label="Back to top">
-          <span className="grid h-10 w-10 place-items-center rounded-xl border border-cyan-300/30 bg-cyan-300/10 text-cyan-200"><Sparkles size={19} /></span>
-          <span className="text-sm font-semibold tracking-[0.22em]">EXPLAIN SIMPLY<span className="text-cyan-300">.</span></span>
+        <a href="#home" className="flex items-center" aria-label="Explain Simply — back to top">
+          <img src="/explain-simply-logo.svg" alt="Explain Simply" className="h-11 w-auto sm:h-12" />
         </a>
         <nav className="hidden items-center gap-7 text-sm text-slate-400 md:flex">
           <a className="transition hover:text-white" href="#about">About</a>
