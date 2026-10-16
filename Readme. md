@@ -1,13 +1,19 @@
-![Explain Simply Banner](https://raw.githubusercontent.com/kdryan/Explain-Simply/main/Screenshot_20261017-015139.png)
+"Explain Simply Banner" (./Screenshot_20261017-015139.png)
 
+Explain Simply
 
-# Explain Simply
-
-An AI-powered web app that helps people understand complex topics through simple, easy-to-understand explanations.
+An AI-powered web app that makes complex topics easier to understand through simple, clear explanations.
 
 Live Demo
 
-https://explain-simply-6qpta1zpe-kdryan.vercel.app/
+Try the app here: "Explain Simply" (https://explain-simply-6qpta1zpe-kdryan.vercel.app/)
+
+Features
+
+- Get simple explanations of complex topics.
+- Explore different topics and questions.
+- Choose an explanation level that suits you.
+- Use an easy-to-understand interface.
 
 Tech Stack
 
@@ -20,13 +26,13 @@ Tech Stack
 - Express
 - Vercel
 
-Deploy Your Own Version
+Getting Started
 
-1. Fork this repository.
-2. Import it into "Vercel" (https://vercel.com/).
-3. Configure the required environment variables in your project settings.
-4. Deploy and enjoy your own version.
+1. Clone or fork this repository.
+2. Install the project dependencies.
+3. Configure the required environment variables.
+4. Run the app locally or deploy it using Vercel.
 
 Author
 
-Created by "@kdrryann" (https://github.com/kdrryan).
+Created by "@kdrryann" (https://github.com/kdryan).
