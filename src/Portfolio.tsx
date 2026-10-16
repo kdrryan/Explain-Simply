@@ -1,5 +1,5 @@
 import React from 'react';
-import { ArrowDown, ArrowUpRight, Bot, Code2, Github, Layers3, Sparkles, Terminal } from 'lucide-react';
+import { ArrowDown, ArrowUpRight, Bot, Code2, Github, Layers3, Terminal } from 'lucide-react';
 
 const projects = [
   {
@@ -22,7 +22,7 @@ export default function Portfolio() {
 
       <header className="relative z-10 mx-auto flex max-w-7xl items-center justify-between px-5 py-5 sm:px-8">
         <a href="#home" className="flex items-center gap-3" aria-label="Back to top">
-          <span className="grid h-10 w-10 place-items-center rounded-xl border border-cyan-300/30 bg-cyan-300/10 text-cyan-200"><Sparkles size={19} /></span>
+          <span className="grid h-10 w-10 place-items-center overflow-hidden rounded-full"><img src="/explain-simply-mark.svg" alt="Explain Simply logo" className="h-full w-full object-contain" /></span>
           <span className="text-sm font-semibold tracking-[0.22em]">EXPLAIN SIMPLY<span className="text-cyan-300">.</span></span>
         </a>
         <nav className="hidden items-center gap-7 text-sm text-slate-400 md:flex">
@@ -77,7 +77,7 @@ export default function Portfolio() {
         <div className="mt-9 grid gap-5 md:grid-cols-2">
           {projects.map((project) => <article key={project.number} className="group rounded-2xl border border-white/10 bg-gradient-to-br from-white/[0.055] to-white/[0.015] p-6 transition duration-300 hover:-translate-y-1 hover:border-cyan-200/30 sm:p-8">
             <div className="flex items-center justify-between"><span className="font-mono text-xs text-cyan-200">{project.number} / PROJECT</span><ArrowUpRight className="text-slate-500 transition group-hover:text-cyan-200" size={20}/></div>
-            <div className="my-8 grid h-44 place-items-center overflow-hidden rounded-xl border border-white/10 bg-[#080c15]"><div className="text-center"><Bot className="mx-auto text-cyan-200" size={42}/><p className="mt-4 font-mono text-xs tracking-[0.25em] text-slate-500">EXPLAIN SIMPLY / AI</p></div></div>
+            <div className="my-8 grid h-44 place-items-center overflow-hidden rounded-xl border border-white/10 bg-[#080c15]"><img src="/explain-simply-mark.svg" alt="Explain Simply logo" className="h-32 w-32 object-contain" /></div>
             <p className="font-mono text-[10px] tracking-[0.2em] text-cyan-200">{project.type}</p><h3 className="mt-2 text-2xl font-semibold">{project.name}</h3><p className="mt-3 text-sm leading-6 text-slate-400">{project.description}</p>
             <div className="mt-5 flex flex-wrap gap-2">{project.tags.map(tag => <span key={tag} className="rounded-full border border-white/10 px-3 py-1 text-xs text-slate-400">{tag}</span>)}</div>
             <a href={project.href} className="mt-7 inline-flex items-center rounded-lg bg-white px-4 py-2.5 text-sm font-semibold text-slate-950 transition hover:bg-cyan-100">Open app <ArrowUpRight className="ml-2" size={15}/></a>
