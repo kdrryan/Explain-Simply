@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="300" height="52" viewBox="0 0 300 52" fill="none">
+  <defs><linearGradient id="g" x1="4" y1="4" x2="43" y2="44" gradientUnits="userSpaceOnUse"><stop stop-color="#A5F3FC"/><stop offset=".55" stop-color="#67E8F9"/><stop offset="1" stop-color="#C4B5FD"/></linearGradient></defs>
+  <rect x="2" y="2" width="48" height="48" rx="14" fill="#0B1422" stroke="url(#g)" stroke-opacity=".65"/>
+  <path d="M15 15h22M15 15v22h22M15 26h15M26 26v11" stroke="url(#g)" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="37" cy="15" r="2.3" fill="#A5F3FC"/><circle cx="37" cy="37" r="2.3" fill="#C4B5FD"/>
+  <text x="62" y="24" fill="#F1F5F9" font-family="Inter,Arial,sans-serif" font-size="17" font-weight="700" letter-spacing="1.4">EXPLAIN</text>
+  <text x="62" y="42" fill="#A5F3FC" font-family="Inter,Arial,sans-serif" font-size="17" font-weight="700" letter-spacing="1.4">SIMPLY</text>
+  <path d="M270 12l2.2 5.8L278 20l-5.8 2.2L270 28l-2.2-5.8L262 20l5.8-2.2L270 12Z" fill="#C4B5FD"/>
+</svg>
