@@ -61,15 +61,15 @@ export const ThemeSelector: React.FC<ThemeSelectorProps> = ({
       {isOpen && (
         <>
           <div
-            className="fixed inset-0 z-30 bg-black/40 backdrop-blur-[1px]"
+            className="fixed inset-0 z-40 bg-black/50 backdrop-blur-[2px]"
             onClick={onToggle}
             aria-hidden="true"
           />
           <div
-            className={`absolute right-0 mt-2 w-64 z-40 p-2.5 shadow-2xl transition-all ${
+            className={`absolute right-0 mt-2 w-64 z-50 p-2.5 shadow-2xl transition-all ${
               isNews
-                ? 'bg-[#ede6d6] border-2 border-stone-900 shadow-[4px_4px_0px_#292524] rounded-none'
-                : 'bg-slate-900/95 backdrop-blur-xl border border-slate-800 rounded-2xl shadow-slate-950/80'
+                ? 'bg-[#ede6d6] border-2 border-stone-900 shadow-[6px_6px_0px_#292524] rounded-none'
+                : 'bg-slate-900/95 backdrop-blur-xl border border-slate-700 rounded-2xl shadow-2xl'
             }`}
           >
             <div className="flex items-center justify-between pb-2 mb-1.5 border-b border-slate-700/50">

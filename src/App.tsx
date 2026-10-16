@@ -26,18 +26,27 @@ import { ShareModal } from './components/ShareModal.tsx';
 import { THEMES } from './themes.ts';
 import type { ExplanationLevel, AppState, ExplanationResult, ApiStatus, ExampleTopic, ThemeId } from './types.ts';
 
-const LEVEL_DESCRIPTIONS: Record<ExplanationLevel, { title: string; subtitle: string }> = {
+const LEVEL_DESCRIPTIONS: Record<
+  ExplanationLevel,
+  { title: string; subtitle: string; label: string; badge: string }
+> = {
   simple: {
-    title: 'Simple',
-    subtitle: 'Plain words & relatable analogies (great for beginners or age 10+)',
+    title: "Explain like I'm 10",
+    subtitle: 'Jawaban super simple, singkat & to-the-point (tanpa paragraf panjang)',
+    label: "Explain like I'm 10",
+    badge: "EXPLAIN LIKE I'M 10",
   },
   intermediate: {
-    title: 'Intermediate',
-    subtitle: 'Step-by-step logic & key definitions (high school / intro college)',
+    title: "Explain like I'm a student",
+    subtitle: 'Penjelasan diperluas dengan analogi umum, logika & contoh nyata',
+    label: "Explain like I'm a student",
+    badge: "EXPLAIN LIKE A STUDENT",
   },
   detailed: {
-    title: 'Detailed',
-    subtitle: 'Comprehensive breakdown & underlying principles (advanced)',
+    title: "Explain like I'm a professor",
+    subtitle: 'Analisis teliti, mendalam, akademis & komprehensif mengupas prinsip inti',
+    label: "Explain like I'm a professor",
+    badge: "EXPLAIN LIKE A PROFESSOR",
   },
 };
 
@@ -291,24 +300,11 @@ export default function App() {
                 {isPink && <span className="text-xs text-pink-400">♡</span>}
                 {isSpace && <span className="text-xs text-cyan-400">✧</span>}
               </h1>
-              <p
-                className={`text-xs ${
-                  isNews ? 'font-serif italic text-stone-700' : currentThemeConfig.textMuted
-                }`}
-              >
-                {currentThemeConfig.subtitle}
-              </p>
             </div>
           </div>
 
-          {/* Right Header Controls: Info + Theme Selector + Status */}
+          {/* Right Header Controls: Info + Status */}
           <div className="flex items-center gap-2">
-            <ThemeSelector
-              currentTheme={theme}
-              onSelectTheme={handleSelectTheme}
-              isOpen={isThemeMenuOpen}
-              onToggle={() => setIsThemeMenuOpen(!isThemeMenuOpen)}
-            />
 
             <button
               type="button"
@@ -462,8 +458,8 @@ export default function App() {
                     : 'rounded-xl bg-black/20 border border-white/10'
                 }`}
               >
-                <span className="font-semibold text-emerald-400 block mb-1">Simple</span>
-                Everyday analogies for complete beginners.
+                <span className="font-semibold text-emerald-400 block mb-1">Explain like I'm 10</span>
+                Concise, direct answers without long paragraphs or dense jargon.
               </div>
               <div
                 className={`p-2.5 ${
@@ -472,8 +468,8 @@ export default function App() {
                     : 'rounded-xl bg-black/20 border border-white/10'
                 }`}
               >
-                <span className="font-semibold text-blue-400 block mb-1">Intermediate</span>
-                Step-by-step logic and clear definitions.
+                <span className="font-semibold text-blue-400 block mb-1">Explain like I'm a student</span>
+                Expanded explanations with common analogies and step-by-step logic.
               </div>
               <div
                 className={`p-2.5 ${
@@ -482,8 +478,8 @@ export default function App() {
                     : 'rounded-xl bg-black/20 border border-white/10'
                 }`}
               >
-                <span className="font-semibold text-purple-400 block mb-1">Detailed</span>
-                Comprehensive principles and nuances.
+                <span className="font-semibold text-purple-400 block mb-1">Explain like I'm a professor</span>
+                Meticulous, rigorous academic analysis covering foundational principles.
               </div>
             </div>
           </div>
@@ -615,13 +611,13 @@ export default function App() {
                 }`}
               >
                 <option value="simple">
-                  {isNews ? 'Edition: Simple (Primer Analogy)' : isCats ? 'Level: Simple (Kitten Friendly 🐱)' : 'Level: Simple (Everyday analogies)'}
+                  {isNews ? "Explain like I'm 10 (Simple)" : isCats ? "Explain like I'm 10 (Simple 🐱)" : "Explain like I'm 10"}
                 </option>
                 <option value="intermediate">
-                  {isNews ? 'Edition: Intermediate (Standard Dispatch)' : 'Level: Intermediate (High school)'}
+                  {isNews ? "Explain like I'm a student" : "Explain like I'm a student"}
                 </option>
                 <option value="detailed">
-                  {isNews ? 'Edition: Detailed (Full Investigative)' : 'Level: Detailed (Comprehensive)'}
+                  {isNews ? "Explain like I'm a professor" : "Explain like I'm a professor"}
                 </option>
               </select>
             </div>
@@ -864,7 +860,7 @@ export default function App() {
                     {isPink && '♡ '}
                     {isSpace && '🚀 '}
                     {isNews && 'EDITION: '}
-                    {result.level.toUpperCase()}
+                    {LEVEL_DESCRIPTIONS[result.level]?.badge || result.level.toUpperCase()}
                   </span>
                 </div>
 
@@ -967,7 +963,7 @@ export default function App() {
                               currentThemeConfig.cornerStyle
                         }`}
                       >
-                        Explain as {lvl} &rarr;
+                        {LEVEL_DESCRIPTIONS[lvl]?.title || lvl} &rarr;
                       </button>
                     );
                   })}
