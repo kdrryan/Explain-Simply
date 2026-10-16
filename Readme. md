@@ -1,0 +1,29 @@
+Explain Simply
+
+An AI-powered web app that helps people understand complex topics through simple, easy-to-understand explanations.
+
+Live Demo
+
+https://explain-simply-6qpta1zpe-kdryan.vercel.app/
+
+Tech Stack
+
+- React
+- TypeScript
+- Vite
+- Tailwind CSS
+- Google Gemini API
+- Node.js
+- Express
+- Vercel
+
+Deploy Your Own Version
+
+1. Fork this repository.
+2. Import it into "Vercel" (https://vercel.com/).
+3. Configure the required environment variables in your project settings.
+4. Deploy and enjoy your own version.
+
+Author
+
+Created by "@kdrryan" (https://github.com/kdrryan).
