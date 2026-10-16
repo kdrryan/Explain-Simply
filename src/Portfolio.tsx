@@ -23,7 +23,7 @@ export default function Portfolio() {
       <header className="relative z-10 mx-auto flex max-w-7xl items-center justify-between px-5 py-5 sm:px-8">
         <a href="#home" className="flex items-center gap-3" aria-label="Back to top">
           <span className="grid h-10 w-10 place-items-center overflow-hidden rounded-full"><img src="/explain-simply-mark.svg" alt="Explain Simply logo" className="h-full w-full object-contain" /></span>
-          <span className="text-sm font-semibold tracking-[0.22em]">EXPLAIN SIMPLY<span className="text-cyan-300">.</span></span>
+          <span className="flex flex-col"><span className="text-sm font-semibold tracking-[0.22em]">EXPLAIN SIMPLY<span className="text-cyan-300">.</span></span><span className="mt-0.5 text-[10px] tracking-[0.18em] text-slate-500">by kdrryann</span></span>
         </a>
         <nav className="hidden items-center gap-7 text-sm text-slate-400 md:flex">
           <a className="transition hover:text-white" href="#about">About</a>
