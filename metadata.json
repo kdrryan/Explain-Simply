@@ -1,0 +1,6 @@
+{
+  "name": "Explain Simply",
+  "description": "Help students understand difficult topics through simple, clear explanations at customizable learning levels.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
