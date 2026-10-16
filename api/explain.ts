@@ -1,5 +1,36 @@
 import { GoogleGenAI } from '@google/genai';
 
+function getAllApiKeys(): string[] {
+  const keys: string[] = [];
+
+  const mainKey = process.env.GEMINI_API_KEY;
+  if (mainKey && mainKey.trim() !== '' && mainKey !== 'MY_GEMINI_API_KEY') {
+    if (mainKey.includes(',')) {
+      keys.push(...mainKey.split(',').map(k => k.trim()).filter(Boolean));
+    } else {
+      keys.push(mainKey.trim());
+    }
+  }
+
+  for (let i = 2; i <= 5; i++) {
+    const extraKey = process.env[`GEMINI_API_KEY_${i}`];
+    if (extraKey && extraKey.trim() !== '' && extraKey !== 'MY_GEMINI_API_KEY') {
+      keys.push(extraKey.trim());
+    }
+  }
+
+  return [...new Set(keys)];
+}
+
+const MODELS_CASCADE = [
+  'gemini-flash-lite-latest', // Top priority: ultra lightweight, blazing fast, independent free quota
+  'gemini-3.5-flash-lite',   // Lightweight fallback with independent free quota
+  'gemini-3.5-flash',        // Reliable fast flash fallback
+  'gemma-4-26b-a4b-it',      // Fast instruction-tuned model
+  'gemini-3.1-flash-lite',   // Flash lite variant
+  'gemini-3.8-flash',        // Standard flash fallback
+];
+
 const PROMPTS: Record<string, string> = {
   simple: `You are "Explain Simply", a friendly, patient tutor who explains complex topics so clearly that a 10-year-old or beginner immediately gets it.
 Guidelines:
@@ -52,58 +83,69 @@ export default async function handler(req: any, res: any) {
       return res.status(400).json({ error: 'Please enter a valid question or topic to explain.' });
     }
 
-    const apiKey = process.env.GEMINI_API_KEY;
-    if (!apiKey || apiKey.trim() === '' || apiKey === 'MY_GEMINI_API_KEY') {
+    const keys = getAllApiKeys();
+    if (keys.length === 0) {
       return res.status(503).json({
         code: 'MISSING_API_KEY',
         error: 'AI is not configured yet. Please configure GEMINI_API_KEY in your Vercel Project Settings > Environment Variables.',
-        instructions: 'Go to your Vercel Project > Settings > Environment Variables, add GEMINI_API_KEY, and redeploy.'
+        instructions: 'Go to Vercel Project Settings > Environment Variables and add GEMINI_API_KEY.'
       });
     }
-
-    const ai = new GoogleGenAI({
-      apiKey: apiKey.trim(),
-      httpOptions: {
-        headers: {
-          'User-Agent': 'aistudio-build',
-        },
-      },
-    });
 
     const validLevels = ['simple', 'intermediate', 'detailed'];
     const selectedLevel = validLevels.includes(level) ? level : 'simple';
     const systemPrompt = PROMPTS[selectedLevel];
 
-    const modelsToTry = ['gemini-3.8-flash', 'gemini-3.1-flash-lite'];
     let lastError: any = null;
     let explanation: string | undefined;
+    let successfulModel = '';
 
-    for (const modelName of modelsToTry) {
-      try {
-        const response = await ai.models.generateContent({
-          model: modelName,
-          contents: question.trim(),
-          config: {
-            systemInstruction: systemPrompt,
-            temperature: 0.6,
+    // Overlap cascade across keys and models
+    keyLoop: for (let kIdx = 0; kIdx < keys.length; kIdx++) {
+      const apiKey = keys[kIdx];
+      const ai = new GoogleGenAI({
+        apiKey,
+        httpOptions: {
+          headers: {
+            'User-Agent': 'aistudio-build',
           },
-        });
-        const candidateText = response.text;
-        if (candidateText && candidateText.trim() !== '') {
-          explanation = candidateText;
-          break;
+        },
+      });
+
+      for (const modelName of MODELS_CASCADE) {
+        try {
+          const response = await ai.models.generateContent({
+            model: modelName,
+            contents: question.trim(),
+            config: {
+              systemInstruction: systemPrompt,
+              temperature: 0.6,
+            },
+          });
+
+          const candidateText = response.text;
+          if (candidateText && candidateText.trim() !== '') {
+            explanation = candidateText;
+            successfulModel = modelName;
+            break keyLoop;
+          }
+        } catch (err: any) {
+          lastError = err;
+          console.warn(`[Vercel API Overlap] Model ${modelName} with key #${kIdx + 1} notice:`, err?.status || err?.message || err);
+
+          if (err?.status === 429 || (err?.message && err.message.includes('429'))) {
+            break; // Switch to next key
+          }
+
+          await new Promise((r) => setTimeout(r, 400));
         }
-      } catch (err: any) {
-        lastError = err;
-        console.warn(`Model ${modelName} notice:`, err?.message || err);
-        await new Promise((r) => setTimeout(r, 600));
       }
     }
 
     if (!explanation || explanation.trim() === '') {
-      const message = lastError?.message || 'Received an empty response from the AI model.';
+      const message = lastError?.message || 'High demand across all available models';
       return res.status(502).json({
-        error: `Could not generate explanation right now: ${message}. Please tap Try Again.`
+        error: `Model sedang sibuk: ${message}. Silakan coba lagi sebentar lagi.`
       });
     }
 
@@ -111,6 +153,7 @@ export default async function handler(req: any, res: any) {
       explanation: explanation.trim(),
       level: selectedLevel,
       question: question.trim(),
+      model: successfulModel,
     });
   } catch (err: any) {
     console.error('API Error:', err);
