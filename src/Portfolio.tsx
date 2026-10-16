@@ -23,7 +23,7 @@ export default function Portfolio() {
       <header className="relative z-10 mx-auto flex max-w-7xl items-center justify-between px-5 py-5 sm:px-8">
         <a href="#home" className="flex items-center gap-3" aria-label="Back to top">
           <span className="grid h-10 w-10 place-items-center rounded-xl border border-cyan-300/30 bg-cyan-300/10 text-cyan-200"><Sparkles size={19} /></span>
-          <span className="text-sm font-semibold tracking-[0.22em]">YOUR BRAND<span className="text-cyan-300">.</span></span>
+          <span className="text-sm font-semibold tracking-[0.22em]">EXPLAIN SIMPLY<span className="text-cyan-300">.</span></span>
         </a>
         <nav className="hidden items-center gap-7 text-sm text-slate-400 md:flex">
           <a className="transition hover:text-white" href="#about">About</a>
@@ -100,11 +100,11 @@ export default function Portfolio() {
       <section id="contact" className="relative z-10 mx-auto max-w-7xl px-5 py-20 sm:px-8 md:py-24">
         <div className="rounded-3xl border border-cyan-200/15 bg-gradient-to-br from-cyan-200/[0.08] via-white/[0.025] to-violet-300/[0.06] p-7 sm:p-12">
           <p className="font-mono text-xs tracking-[0.25em] text-cyan-200">04 / CONTACT</p><h2 className="mt-4 max-w-2xl text-3xl font-semibold tracking-tight sm:text-5xl">Have an idea? Let's make something useful.</h2><p className="mt-4 max-w-xl text-sm leading-7 text-slate-400">Open to learning, sharing ideas, and exploring meaningful projects together.</p>
-          <div className="mt-7 flex flex-wrap gap-3"><a href="https://github.com/kdrryan/Explain-Simply" target="_blank" rel="noreferrer" className="rounded-xl bg-cyan-200 px-5 py-3 text-sm font-semibold text-slate-950 transition hover:bg-cyan-100"><Github className="mr-2 inline" size={16}/> View GitHub</a><a href="#home" className="rounded-xl border border-white/15 px-5 py-3 text-sm font-semibold transition hover:border-cyan-200/40">Back to top ↑</a></div>
+          <div className="mt-7 flex flex-wrap gap-3"><a href="mailto:michaelbusiness117@gmail.com" className="rounded-xl border border-cyan-200/30 px-5 py-3 text-sm font-semibold text-cyan-100 transition hover:bg-cyan-200/10">michaelbusiness117@gmail.com <ArrowUpRight className="ml-2 inline" size={15}/></a><a href="https://github.com/kdrryan/Explain-Simply" target="_blank" rel="noreferrer" className="rounded-xl bg-cyan-200 px-5 py-3 text-sm font-semibold text-slate-950 transition hover:bg-cyan-100"><Github className="mr-2 inline" size={16}/> View GitHub</a><a href="#home" className="rounded-xl border border-white/15 px-5 py-3 text-sm font-semibold transition hover:border-cyan-200/40">Back to top ↑</a></div>
         </div>
       </section>
 
-      <footer className="relative z-10 border-t border-white/[0.07] px-5 py-7 text-center text-xs text-slate-600"><span className="font-mono tracking-widest">YOUR BRAND</span> <span className="mx-2">/</span> Built with curiosity. Updated as I learn.</footer>
+      <footer className="relative z-10 border-t border-white/[0.07] px-5 py-7 text-center text-xs text-slate-600"><span className="font-mono tracking-widest">EXPLAIN SIMPLY</span> <span className="mx-2">/</span> Built with curiosity. Updated as I learn.</footer>
     </main>
   );
 }
