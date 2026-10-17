@@ -1,5 +1,7 @@
 export type ExplanationLevel = 'simple' | 'intermediate' | 'detailed';
 
+export type AppLanguage = 'en' | 'id';
+
 export type AppState = 'empty' | 'loading' | 'error' | 'result';
 
 export type ThemeId = 'dark' | 'pink' | 'cats' | 'space' | 'newspaper';

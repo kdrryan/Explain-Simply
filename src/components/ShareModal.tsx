@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { Share2, Copy, Check, Download, Smartphone, Globe, X } from 'lucide-react';
-import type { ThemeId } from '../types.ts';
+import type { ThemeId, AppLanguage } from '../types.ts';
 import { THEMES } from '../themes.ts';
+import { TRANSLATIONS } from '../translations.ts';
 
 interface ShareModalProps {
   isOpen: boolean;
@@ -9,6 +10,7 @@ interface ShareModalProps {
   theme: ThemeId;
   deferredPrompt: any;
   onInstall: () => void;
+  language: AppLanguage;
 }
 
 export const ShareModal: React.FC<ShareModalProps> = ({
@@ -17,10 +19,12 @@ export const ShareModal: React.FC<ShareModalProps> = ({
   theme,
   deferredPrompt,
   onInstall,
+  language,
 }) => {
   const [copied, setCopied] = useState(false);
   const isNews = theme === 'newspaper';
   const themeConfig = THEMES[theme];
+  const t = TRANSLATIONS[language].share;
 
   if (!isOpen) return null;
 
@@ -76,7 +80,7 @@ export const ShareModal: React.FC<ShareModalProps> = ({
                 isNews ? 'font-serif uppercase text-stone-950 text-lg' : ''
               }`}
             >
-              {isNews ? 'DISPATCH & SHARE' : 'Share & Install App'}
+              {isNews ? t.titleNews : t.title}
             </h3>
           </div>
           <button
@@ -88,14 +92,14 @@ export const ShareModal: React.FC<ShareModalProps> = ({
           </button>
         </div>
 
-        {/* Section 1: Share Link */}
-        <div className="space-y-2">
+        {/* Section 1: Share Link & Direct Share */}
+        <div className="space-y-2.5">
           <span
             className={`text-xs font-semibold uppercase tracking-wider block ${
               isNews ? 'font-serif text-stone-800' : 'text-slate-400'
             }`}
           >
-            Share with students or friends
+            {t.shareHeading}
           </span>
 
           <div
@@ -121,12 +125,12 @@ export const ShareModal: React.FC<ShareModalProps> = ({
               {copied ? (
                 <>
                   <Check className="w-3.5 h-3.5 text-emerald-400" />
-                  <span className="text-emerald-400">Copied!</span>
+                  <span className="text-emerald-400">{t.copiedBtn}</span>
                 </>
               ) : (
                 <>
                   <Copy className="w-3.5 h-3.5" />
-                  <span>Copy</span>
+                  <span>{t.copyBtn}</span>
                 </>
               )}
             </button>
@@ -143,16 +147,12 @@ export const ShareModal: React.FC<ShareModalProps> = ({
               }`}
             >
               <Share2 className="w-3.5 h-3.5" />
-              <span>Share via WhatsApp, Messages, or Social</span>
+              <span>{t.nativeShareBtn}</span>
             </button>
           )}
-
-          <p className="text-[0.72rem] opacity-75 leading-relaxed pt-0.5">
-            💡 <em>Catatan:</em> Pastikan tombol <strong>Share</strong> di pojok kanan atas AI Studio sudah disetel ke <strong>Public / Anyone with the link</strong> agar orang lain bisa langsung membuka tanpa error 403.
-          </p>
         </div>
 
-        {/* Section 2: Install as a Phone App (PWA) */}
+        {/* Section 2: Install / Download App */}
         <div
           className={`p-3.5 space-y-2.5 border text-xs ${
             isNews
@@ -162,12 +162,11 @@ export const ShareModal: React.FC<ShareModalProps> = ({
         >
           <div className="flex items-center gap-2 font-semibold">
             <Smartphone className="w-4 h-4 text-emerald-400" />
-            <span>Install on Your Phone or PC</span>
+            <span>{t.installHeading}</span>
           </div>
 
           <p className="opacity-80 text-[0.78rem] leading-relaxed">
-            You can add <strong>Explain Simply</strong> directly to your home screen. It opens like
-            a native app without the browser address bar!
+            {t.installDesc}
           </p>
 
           {/* If 1-tap browser install is supported */}
@@ -182,27 +181,35 @@ export const ShareModal: React.FC<ShareModalProps> = ({
               }`}
             >
               <Download className="w-4 h-4" />
-              <span>Install to Home Screen (1-Tap)</span>
+              <span>{t.installBtn}</span>
             </button>
           )}
 
-          {/* Manual install instructions */}
+          {/* Simple step-by-step for Android and iPhone */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1 text-[0.72rem]">
             <div
-              className={`p-2 border ${
+              className={`p-2.5 border ${
                 isNews ? 'bg-[#ede6d6] border-stone-800 rounded-none' : 'bg-black/20 border-white/5 rounded-xl'
               }`}
             >
-              <strong className="block mb-0.5 text-emerald-400">Android (Chrome):</strong>
-              Tap the <strong>⋮ menu</strong> at top right &rarr; tap <strong>"Add to Home screen"</strong> or <strong>"Install app"</strong>.
+              <strong className="block mb-0.5 text-emerald-400">Android:</strong>
+              {language === 'id' ? (
+                <span>Klik ikon titik tiga <strong>(⋮)</strong> di browser &rarr; pilih <strong>"Tambahkan ke Layar Utama"</strong>.</span>
+              ) : (
+                <span>Tap menu <strong>(⋮)</strong> in browser &rarr; select <strong>"Add to Home screen"</strong>.</span>
+              )}
             </div>
             <div
-              className={`p-2 border ${
+              className={`p-2.5 border ${
                 isNews ? 'bg-[#ede6d6] border-stone-800 rounded-none' : 'bg-black/20 border-white/5 rounded-xl'
               }`}
             >
-              <strong className="block mb-0.5 text-blue-400">iPhone (Safari):</strong>
-              Tap the <strong>Share</strong> button (box with arrow) &rarr; scroll down &amp; tap <strong>"Add to Home Screen"</strong>.
+              <strong className="block mb-0.5 text-blue-400">iPhone / iOS:</strong>
+              {language === 'id' ? (
+                <span>Klik tombol <strong>Bagikan</strong> (ikon kotak panah) &rarr; pilih <strong>"Tambahkan ke Layar Utama"</strong>.</span>
+              ) : (
+                <span>Tap <strong>Share</strong> (box with arrow) &rarr; select <strong>"Add to Home Screen"</strong>.</span>
+              )}
             </div>
           </div>
         </div>
@@ -214,7 +221,7 @@ export const ShareModal: React.FC<ShareModalProps> = ({
             isNews ? 'font-serif underline' : ''
           }`}
         >
-          Done
+          {t.close}
         </button>
       </div>
     </div>

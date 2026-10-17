@@ -21,34 +21,18 @@ import {
   Share2,
 } from 'lucide-react';
 import { MarkdownView } from './components/MarkdownView.tsx';
-import { ThemeSelector } from './components/ThemeSelector.tsx';
 import { ShareModal } from './components/ShareModal.tsx';
 import { THEMES } from './themes.ts';
-import type { ExplanationLevel, AppState, ExplanationResult, ApiStatus, ExampleTopic, ThemeId } from './types.ts';
-
-const LEVEL_DESCRIPTIONS: Record<
+import { TRANSLATIONS } from './translations.ts';
+import type {
   ExplanationLevel,
-  { title: string; subtitle: string; label: string; badge: string }
-> = {
-  simple: {
-    title: "Explain like I'm 10",
-    subtitle: 'Jawaban super simple, singkat & to-the-point (tanpa paragraf panjang)',
-    label: "Explain like I'm 10",
-    badge: "EXPLAIN LIKE I'M 10",
-  },
-  intermediate: {
-    title: "Explain like I'm a student",
-    subtitle: 'Penjelasan diperluas dengan analogi umum, logika & contoh nyata',
-    label: "Explain like I'm a student",
-    badge: "EXPLAIN LIKE A STUDENT",
-  },
-  detailed: {
-    title: "Explain like I'm a professor",
-    subtitle: 'Analisis teliti, mendalam, akademis & komprehensif mengupas prinsip inti',
-    label: "Explain like I'm a professor",
-    badge: "EXPLAIN LIKE A PROFESSOR",
-  },
-};
+  AppLanguage,
+  AppState,
+  ExplanationResult,
+  ApiStatus,
+  ExampleTopic,
+  ThemeId,
+} from './types.ts';
 
 const THEME_PILL_ICONS: Record<ThemeId, React.ComponentType<{ className?: string }>> = {
   dark: Sparkles,
@@ -69,6 +53,16 @@ export default function App() {
     return 'dark';
   });
 
+  const [language, setLanguage] = useState<AppLanguage>(() => {
+    try {
+      const saved = localStorage.getItem('explain_simply_lang');
+      if (saved === 'en' || saved === 'id') return saved;
+    } catch {
+      // ignore
+    }
+    return 'id'; // Default to Indonesia
+  });
+
   const [question, setQuestion] = useState('');
   const [level, setLevel] = useState<ExplanationLevel>('simple');
   const [appState, setAppState] = useState<AppState>('empty');
@@ -78,13 +72,13 @@ export default function App() {
   const [copied, setCopied] = useState(false);
   const [apiStatus, setApiStatus] = useState<ApiStatus | null>(null);
   const [showSetupGuide, setShowSetupGuide] = useState(false);
-  const [isThemeMenuOpen, setIsThemeMenuOpen] = useState(false);
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
 
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const outputRef = useRef<HTMLDivElement>(null);
 
+  const t = TRANSLATIONS[language];
   const currentThemeConfig = THEMES[theme];
   const isNews = theme === 'newspaper';
   const isPink = theme === 'pink';
@@ -137,6 +131,15 @@ export default function App() {
     };
   }, []);
 
+  const handleLanguageChange = (newLang: AppLanguage) => {
+    setLanguage(newLang);
+    try {
+      localStorage.setItem('explain_simply_lang', newLang);
+    } catch {
+      // ignore
+    }
+  };
+
   const handleInstall = async () => {
     if (!deferredPrompt) return;
     deferredPrompt.prompt();
@@ -160,7 +163,7 @@ export default function App() {
     const l = targetLevel ?? level;
 
     if (!q) {
-      setErrorMessage('Please type a question or choose an example topic.');
+      setErrorMessage(t.error.emptyQuestion);
       setAppState('error');
       textareaRef.current?.focus();
       return;
@@ -174,7 +177,7 @@ export default function App() {
       const response = await fetch('/api/explain', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ question: q, level: l }),
+        body: JSON.stringify({ question: q, level: l, language }),
       });
 
       const data = await response.json();
@@ -199,7 +202,7 @@ export default function App() {
         outputRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
       }, 100);
     } catch (err: any) {
-      setErrorMessage(err?.message || 'Something went wrong while generating the explanation.');
+      setErrorMessage(err?.message || t.error.genericError);
       setAppState('error');
     }
   };
@@ -252,9 +255,9 @@ export default function App() {
         {/* Special Newspaper Masthead Banner */}
         {isNews && (
           <div className="border-b border-stone-800/60 bg-[#e4ddcc] px-4 py-1 text-[0.68rem] font-serif uppercase tracking-wider text-stone-700 flex justify-between items-center max-w-2xl mx-auto">
-            <span>MORNING EDITION · VOL. LXXIV</span>
-            <span>WEATHER: OPTIMAL FOR STUDYING</span>
-            <span>PRICE: FREE</span>
+            <span>{t.header.newspaperMasthead.edition}</span>
+            <span>{t.header.newspaperMasthead.weather}</span>
+            <span>{t.header.newspaperMasthead.price}</span>
           </div>
         )}
 
@@ -295,7 +298,7 @@ export default function App() {
                     : currentThemeConfig.textPrimary
                 }`}
               >
-                <span>{isNews ? 'THE DAILY EXPLAINER' : 'Explain Simply'}</span>
+                <span>{isNews ? 'THE DAILY EXPLAINER' : t.header.appName}</span>
                 {isCats && <span className="text-xs">🐾</span>}
                 {isPink && <span className="text-xs text-pink-400">♡</span>}
                 {isSpace && <span className="text-xs text-cyan-400">✧</span>}
@@ -303,35 +306,75 @@ export default function App() {
             </div>
           </div>
 
-          {/* Right Header Controls: Info + Status */}
-          <div className="flex items-center gap-2">
+          {/* Right Header Controls: Language Selector + Share + Info + Status */}
+          <div className="flex items-center gap-1.5 sm:gap-2">
+            {/* Simple Text-Only Language Setting (1.Indonesia 2.English) - ZERO country emojis */}
+            <div
+              className={`flex items-center text-xs font-semibold p-0.5 border transition-all ${
+                isNews
+                  ? 'border-2 border-stone-800 bg-[#e4ddcc] shadow-[1px_1px_0px_#292524] rounded-none'
+                  : 'border-white/10 bg-black/30 rounded-xl'
+              }`}
+              title={t.header.langSelectLabel}
+            >
+              <button
+                type="button"
+                onClick={() => handleLanguageChange('id')}
+                className={`px-2 py-1 text-[0.72rem] transition-all ${
+                  language === 'id'
+                    ? isNews
+                      ? 'bg-stone-900 text-amber-50 font-bold'
+                      : 'bg-white/20 text-white font-bold rounded-lg shadow-sm'
+                    : isNews
+                    ? 'text-stone-700 hover:text-stone-950 font-medium'
+                    : 'text-slate-400 hover:text-slate-200'
+                }`}
+              >
+                Indonesia
+              </button>
+              <button
+                type="button"
+                onClick={() => handleLanguageChange('en')}
+                className={`px-2 py-1 text-[0.72rem] transition-all ${
+                  language === 'en'
+                    ? isNews
+                      ? 'bg-stone-900 text-amber-50 font-bold'
+                      : 'bg-white/20 text-white font-bold rounded-lg shadow-sm'
+                    : isNews
+                    ? 'text-stone-700 hover:text-stone-950 font-medium'
+                    : 'text-slate-400 hover:text-slate-200'
+                }`}
+              >
+                English
+              </button>
+            </div>
 
             <button
               type="button"
               onClick={() => setIsShareModalOpen(true)}
-              className={`text-xs px-2.5 py-1.5 flex items-center gap-1 transition-colors min-h-[36px] ${
+              className={`text-xs px-2.5 py-1.5 flex items-center gap-1 transition-colors min-h-[34px] ${
                 isNews
                   ? 'border-2 border-stone-800 bg-[#ede6d6] hover:bg-[#e4ddcc] text-stone-900 shadow-[1px_1px_0px_#292524]'
                   : currentThemeConfig.buttonSecondary + ' ' + currentThemeConfig.cornerStyle
               }`}
-              title="Share or Install App"
+              title={t.header.shareBtn}
             >
               <Share2 className="w-3.5 h-3.5 opacity-80" />
-              <span className="hidden sm:inline">Share / App</span>
+              <span className="hidden sm:inline">{t.header.shareBtn}</span>
             </button>
 
             <button
               type="button"
               onClick={() => setShowSetupGuide(!showSetupGuide)}
-              className={`text-xs px-2.5 py-1.5 flex items-center gap-1 transition-colors min-h-[36px] ${
+              className={`text-xs px-2.5 py-1.5 flex items-center gap-1 transition-colors min-h-[34px] ${
                 isNews
                   ? 'border-2 border-stone-800 bg-[#ede6d6] hover:bg-[#e4ddcc] text-stone-900 shadow-[1px_1px_0px_#292524]'
                   : currentThemeConfig.buttonSecondary + ' ' + currentThemeConfig.cornerStyle
               }`}
-              title="About Explain Simply"
+              title={t.header.infoBtn}
             >
               <HelpCircle className="w-3.5 h-3.5 opacity-70" />
-              <span className="hidden sm:inline">Info</span>
+              <span className="hidden sm:inline">{t.header.infoBtn}</span>
             </button>
 
             {apiStatus && (
@@ -356,14 +399,14 @@ export default function App() {
                   }`}
                 />
                 <span className="hidden sm:inline">
-                  {apiStatus.configured ? 'AI Ready' : 'Setup Needed'}
+                  {apiStatus.configured ? t.header.aiReady : t.header.setupNeeded}
                 </span>
               </span>
             )}
           </div>
         </div>
 
-        {/* Quick Theme Switcher Pills Row */}
+        {/* Quick Theme Switcher Pills Row - Returned below header */}
         <div
           className={`px-4 py-1.5 overflow-x-auto no-scrollbar border-t ${
             isNews
@@ -377,7 +420,7 @@ export default function App() {
                 isNews ? 'font-serif text-stone-700' : currentThemeConfig.textMuted
               }`}
             >
-              Theme:
+              {t.header.themeLabel}
             </span>
             {(Object.keys(THEMES) as ThemeId[]).map((tId) => {
               const cfg = THEMES[tId];
@@ -408,9 +451,9 @@ export default function App() {
         </div>
       </header>
 
-      {/* Main Container - Android First */}
+      {/* Main Container */}
       <main className="flex-1 max-w-2xl w-full mx-auto px-4 py-5 flex flex-col gap-4">
-        {/* Info / Setup Guide Drawer */}
+        {/* Info / About Guide Drawer */}
         {showSetupGuide && (
           <div
             className={`p-4 text-sm space-y-3 shadow-lg ${
@@ -436,19 +479,18 @@ export default function App() {
                 }`}
               >
                 <ShieldCheck className="w-4 h-4 text-emerald-400" />
-                About Explain Simply
+                {t.about.title}
               </h3>
               <button
                 type="button"
                 onClick={() => setShowSetupGuide(false)}
                 className="text-xs opacity-70 hover:opacity-100 px-2 py-1"
               >
-                Close
+                {t.about.close}
               </button>
             </div>
             <p className="text-xs leading-relaxed opacity-90">
-              Designed for phones and quick study sessions. All AI requests are securely
-              handled by the server without exposing credentials to browser code. Built by @kdrryann.
+              {t.about.description}
             </p>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 pt-1 text-xs">
               <div
@@ -458,8 +500,10 @@ export default function App() {
                     : 'rounded-xl bg-black/20 border border-white/10'
                 }`}
               >
-                <span className="font-semibold text-emerald-400 block mb-1">Explain like I'm 10</span>
-                Concise, direct answers without long paragraphs or dense jargon.
+                <span className="font-semibold text-emerald-400 block mb-1">
+                  {t.levels.simple.title}
+                </span>
+                {t.levels.simple.infoDesc}
               </div>
               <div
                 className={`p-2.5 ${
@@ -468,8 +512,10 @@ export default function App() {
                     : 'rounded-xl bg-black/20 border border-white/10'
                 }`}
               >
-                <span className="font-semibold text-blue-400 block mb-1">Explain like I'm a student</span>
-                Expanded explanations with common analogies and step-by-step logic.
+                <span className="font-semibold text-blue-400 block mb-1">
+                  {t.levels.intermediate.title}
+                </span>
+                {t.levels.intermediate.infoDesc}
               </div>
               <div
                 className={`p-2.5 ${
@@ -478,8 +524,10 @@ export default function App() {
                     : 'rounded-xl bg-black/20 border border-white/10'
                 }`}
               >
-                <span className="font-semibold text-purple-400 block mb-1">Explain like I'm a professor</span>
-                Meticulous, rigorous academic analysis covering foundational principles.
+                <span className="font-semibold text-purple-400 block mb-1">
+                  {t.levels.detailed.title}
+                </span>
+                {t.levels.detailed.infoDesc}
               </div>
             </div>
           </div>
@@ -496,14 +544,26 @@ export default function App() {
           >
             <div className="flex items-center gap-2 font-semibold text-amber-500">
               <AlertTriangle className="w-4 h-4 flex-shrink-0" />
-              <span>AI Setup Required</span>
+              <span>{language === 'id' ? 'Konfigurasi AI Diperlukan' : 'AI Setup Required'}</span>
             </div>
             <p className="text-xs leading-relaxed opacity-90">
-              To enable live AI explanations, configure your{' '}
-              <code className="bg-amber-900/30 px-1.5 py-0.5 rounded font-mono text-xs border border-amber-700/50">
-                GEMINI_API_KEY
-              </code>{' '}
-              in your environment or the AI Studio Secrets panel.
+              {language === 'id' ? (
+                <span>
+                  Untuk mengaktifkan penjelasan AI langsung, pastikan{' '}
+                  <code className="bg-amber-900/30 px-1.5 py-0.5 rounded font-mono text-xs border border-amber-700/50">
+                    GEMINI_API_KEY
+                  </code>{' '}
+                  sudah ditambahkan ke environment variables atau Secrets panel.
+                </span>
+              ) : (
+                <span>
+                  To enable live AI explanations, configure your{' '}
+                  <code className="bg-amber-900/30 px-1.5 py-0.5 rounded font-mono text-xs border border-amber-700/50">
+                    GEMINI_API_KEY
+                  </code>{' '}
+                  in your environment or the AI Studio Secrets panel.
+                </span>
+              )}
             </p>
           </div>
         )}
@@ -524,7 +584,13 @@ export default function App() {
                   isNews ? 'font-serif text-stone-950 font-bold' : currentThemeConfig.textMuted
                 }`}
               >
-                {isNews ? 'EDITORIAL INQUIRY / TOPIC' : 'Topic or Question'}
+                {isNews
+                  ? language === 'id'
+                    ? 'SUBJEK BERITA / TOPIK'
+                    : 'EDITORIAL INQUIRY / TOPIC'
+                  : language === 'id'
+                  ? 'Topik atau Pertanyaan'
+                  : 'Topic or Question'}
               </label>
               {question.length > 0 && (
                 <span className="text-[0.7rem] opacity-60">{question.length}/500</span>
@@ -542,7 +608,7 @@ export default function App() {
                   handleExplain();
                 }
               }}
-              placeholder={currentThemeConfig.inputPlaceholder}
+              placeholder={t.input.placeholder[theme] || t.input.placeholder.dark}
               maxLength={500}
               className={`w-full p-3.5 text-base transition-colors resize-y min-h-[96px] ${
                 currentThemeConfig.inputBg
@@ -552,25 +618,17 @@ export default function App() {
             />
           </div>
 
-          {/* Example Pills - Filtered per Theme */}
+          {/* Example Pills - Filtered per Theme & Language */}
           <div className="space-y-1.5">
             <span
               className={`text-xs block font-medium ${
                 isNews ? 'font-serif text-stone-800 italic' : currentThemeConfig.textMuted
               }`}
             >
-              {isCats
-                ? 'Curious cat questions to explore:'
-                : isPink
-                ? 'Sweet topics to try:'
-                : isSpace
-                ? 'Cosmic missions to investigate:'
-                : isNews
-                ? 'Front-page topics to dispatch:'
-                : 'Try an example topic:'}
+              {t.input.topicsLabel[theme] || t.input.topicsLabel.dark}
             </span>
             <div className="flex flex-wrap gap-2">
-              {currentThemeConfig.examples.map((ex) => (
+              {(t.examples[theme] || t.examples.dark).map((ex) => (
                 <button
                   key={ex.label}
                   type="button"
@@ -592,7 +650,7 @@ export default function App() {
           <div className="pt-1 flex flex-col sm:flex-row gap-2.5">
             <div className="flex-1 flex flex-col justify-center">
               <label htmlFor="level-select" className="sr-only">
-                Explanation Level
+                {language === 'id' ? 'Tingkat Penjelasan' : 'Explanation Level'}
               </label>
               <select
                 id="level-select"
@@ -610,15 +668,9 @@ export default function App() {
                       currentThemeConfig.textPrimary
                 }`}
               >
-                <option value="simple">
-                  {isNews ? "Explain like I'm 10 (Simple)" : isCats ? "Explain like I'm 10 (Simple 🐱)" : "Explain like I'm 10"}
-                </option>
-                <option value="intermediate">
-                  {isNews ? "Explain like I'm a student" : "Explain like I'm a student"}
-                </option>
-                <option value="detailed">
-                  {isNews ? "Explain like I'm a professor" : "Explain like I'm a professor"}
-                </option>
+                <option value="simple">{t.levels.simple.title}</option>
+                <option value="intermediate">{t.levels.intermediate.title}</option>
+                <option value="detailed">{t.levels.detailed.title}</option>
               </select>
             </div>
 
@@ -634,12 +686,16 @@ export default function App() {
                 <>
                   <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                   <span>
-                    {isCats ? 'Thinking...' : isNews ? 'Dispatching...' : 'Explaining...'}
+                    {isCats
+                      ? t.input.loadingCats
+                      : isNews
+                      ? t.input.loadingNews
+                      : t.input.loadingBtn}
                   </span>
                 </>
               ) : (
                 <>
-                  <span>{isNews ? 'Print Dispatch' : 'Explain'}</span>
+                  <span>{isNews ? t.input.explainBtnNews : t.input.explainBtn}</span>
                   {isCats ? (
                     <Cat className="w-4 h-4" />
                   ) : isPink ? (
@@ -656,12 +712,13 @@ export default function App() {
             </button>
           </div>
 
+          {/* Subtitle dynamically rendered in selected language */}
           <div
-            className={`text-[0.72rem] ${
+            className={`text-[0.72rem] leading-relaxed ${
               isNews ? 'font-serif italic text-stone-700' : currentThemeConfig.textMuted
             }`}
           >
-            {LEVEL_DESCRIPTIONS[level].subtitle}
+            {t.levels[level].subtitle}
           </div>
         </section>
 
@@ -672,23 +729,25 @@ export default function App() {
             <div
               className={`p-8 text-center flex flex-col items-center justify-center space-y-3 ${
                 isNews
-                  ? 'bg-[#ede6d6]/70 border-2 border-dashed border-stone-800 rounded-none font-serif'
+                  ? 'bg-[#fcfaf4] border-2 border-dashed border-stone-800'
                   : currentThemeConfig.cardBg +
-                    '/50 border border-dashed border-slate-800/80 ' +
+                    ' border border-dashed ' +
+                    currentThemeConfig.cardBorder +
+                    ' ' +
                     currentThemeConfig.cornerStyle
               }`}
             >
               <div
                 className={`w-12 h-12 flex items-center justify-center ${
                   isNews
-                    ? 'border-2 border-stone-800 bg-[#e4ddcc] text-stone-800'
-                    : 'rounded-2xl bg-black/20 border border-white/10 ' + currentThemeConfig.accentText
+                    ? 'border border-stone-800 text-stone-800'
+                    : 'rounded-full bg-white/5 ' + currentThemeConfig.accentText
                 }`}
               >
                 {isCats ? (
                   <Cat className="w-6 h-6" />
                 ) : isPink ? (
-                  <Heart className="w-6 h-6" />
+                  <Heart className="w-6 h-6 fill-current/20" />
                 ) : isSpace ? (
                   <Rocket className="w-6 h-6" />
                 ) : isNews ? (
@@ -697,22 +756,20 @@ export default function App() {
                   <BookOpen className="w-6 h-6" />
                 )}
               </div>
-              <div className="max-w-xs space-y-1">
+              <div className="space-y-1 max-w-sm">
                 <h3
-                  className={`text-sm font-semibold ${
-                    isNews ? 'font-serif uppercase tracking-wider text-stone-900 font-bold' : currentThemeConfig.textPrimary
+                  className={`font-semibold text-sm ${
+                    isNews ? 'font-serif uppercase text-stone-950 font-bold' : currentThemeConfig.textPrimary
                   }`}
                 >
-                  {isNews ? 'NO DISPATCH FILED YET' : isCats ? 'Awaiting Cat Curiosity' : 'No explanation yet'}
+                  {t.emptyState.title}
                 </h3>
                 <p
                   className={`text-xs leading-relaxed ${
                     isNews ? 'font-serif text-stone-700' : currentThemeConfig.textMuted
                   }`}
                 >
-                  {isNews
-                    ? 'Submit a topic above to print an educational breakdown in your morning edition.'
-                    : 'Enter any tricky topic above or tap an example to get a breakdown customized to your level.'}
+                  {t.emptyState.description}
                 </p>
               </div>
             </div>
@@ -723,7 +780,7 @@ export default function App() {
             <div
               className={`p-8 text-center flex flex-col items-center justify-center space-y-4 ${
                 isNews
-                  ? 'bg-[#ede6d6] border-2 border-stone-800 shadow-[3px_3px_0px_#292524] rounded-none font-serif'
+                  ? 'bg-[#ede6d6] border-2 border-stone-900 shadow-[4px_4px_0px_#292524]'
                   : currentThemeConfig.cardBg +
                     ' border ' +
                     currentThemeConfig.cardBorder +
@@ -731,29 +788,58 @@ export default function App() {
                     currentThemeConfig.cornerStyle
               }`}
             >
-              <div className="w-10 h-10 border-3 border-current/20 border-t-current rounded-full animate-spin text-blue-500" />
-              <div className="space-y-1 max-w-xs">
+              <div className="relative">
+                <div
+                  className={`w-12 h-12 rounded-full border-2 border-current/20 border-t-current animate-spin ${currentThemeConfig.accentText}`}
+                />
+                <div className="absolute inset-0 flex items-center justify-center">
+                  {isCats ? (
+                    <Cat className="w-5 h-5 text-amber-400 animate-pulse" />
+                  ) : isPink ? (
+                    <Heart className="w-5 h-5 text-pink-400 animate-pulse fill-pink-400" />
+                  ) : isSpace ? (
+                    <Rocket className="w-5 h-5 text-cyan-400 animate-bounce" />
+                  ) : isNews ? (
+                    <Newspaper className="w-5 h-5 text-stone-900" />
+                  ) : (
+                    <Sparkles className="w-5 h-5 text-blue-400 animate-pulse" />
+                  )}
+                </div>
+              </div>
+              <div className="space-y-1.5 max-w-sm">
                 <h3
-                  className={`text-sm font-semibold ${
-                    isNews ? 'font-serif uppercase text-stone-950 font-bold' : currentThemeConfig.textPrimary
+                  className={`font-bold text-sm ${
+                    isNews ? 'font-serif uppercase text-stone-950' : currentThemeConfig.textPrimary
                   }`}
                 >
                   {isCats
-                    ? 'The Purr-fessor is crafting your answer...'
-                    : isNews
-                    ? 'Setting movable type & printing dispatch...'
+                    ? language === 'id'
+                      ? 'Purr-fessor sedang merenung...'
+                      : 'The Purr-fessor is thinking...'
                     : isPink
-                    ? 'Sweetening and clarifying your explanation...'
+                    ? language === 'id'
+                      ? 'Menyiapkan jawaban yang manis...'
+                      : 'Brewing sweet explanation...'
                     : isSpace
-                    ? 'Decoding cosmic transmissions...'
-                    : `Preparing your ${LEVEL_DESCRIPTIONS[level].title.toLowerCase()} explanation...`}
+                    ? language === 'id'
+                      ? 'Menerjemahkan data kosmik...'
+                      : 'Decrypting cosmic transmission...'
+                    : isNews
+                    ? language === 'id'
+                      ? 'Menyiapkan cetakan berita...'
+                      : 'Setting editorial presses...'
+                    : language === 'id'
+                    ? 'Merangkum secara sederhana...'
+                    : 'Crafting simple breakdown...'}
                 </h3>
                 <p
-                  className={`text-xs leading-relaxed ${
-                    isNews ? 'font-serif text-stone-700' : currentThemeConfig.textMuted
+                  className={`text-xs ${
+                    isNews ? 'font-serif italic text-stone-700' : currentThemeConfig.textMuted
                   }`}
                 >
-                  Breaking down the concept into bite-sized, digestible ideas.
+                  {language === 'id'
+                    ? 'AI sedang memproses penjelasan yang mudah dipahami...'
+                    : 'Transforming complex concepts into easy, memorable insights...'}
                 </p>
               </div>
             </div>
@@ -762,40 +848,38 @@ export default function App() {
           {/* ERROR STATE */}
           {appState === 'error' && (
             <div
-              className={`p-5 space-y-3.5 text-left ${
+              className={`p-5 space-y-3.5 border ${
                 isNews
-                  ? 'bg-[#fcf5e8] border-2 border-red-800 shadow-[3px_3px_0px_#7f1d1d] rounded-none font-serif text-stone-900'
-                  : 'bg-red-950/30 border border-red-800/40 rounded-2xl'
+                  ? 'bg-rose-50 border-2 border-stone-900 shadow-[4px_4px_0px_#292524] text-stone-900 font-serif'
+                  : 'bg-rose-950/30 border-rose-800/40 ' +
+                    currentThemeConfig.cornerStyle +
+                    ' text-rose-200'
               }`}
             >
-              <div className="flex items-start gap-3">
-                <div className="w-8 h-8 rounded-lg bg-red-900/40 border border-red-700/50 flex items-center justify-center text-red-400 flex-shrink-0 mt-0.5">
-                  <AlertTriangle className="w-4 h-4" />
-                </div>
-                <div className="space-y-1 flex-1">
-                  <div className="flex items-center gap-2">
-                    <span className="text-[0.68rem] uppercase font-bold tracking-wider px-1.5 py-0.5 rounded bg-red-800/50 text-red-300">
-                      {isMissingKey ? 'Setup Required' : 'Notice'}
-                    </span>
-                  </div>
-                  <p className="text-sm leading-relaxed font-medium text-red-200">{errorMessage}</p>
-                </div>
+              <div className="flex items-center gap-2 font-semibold text-rose-400">
+                <AlertTriangle className="w-4 h-4 flex-shrink-0" />
+                <span>
+                  {language === 'id' ? 'Terjadi Kendala' : 'Unable to Generate Explanation'}
+                </span>
               </div>
+              <p className="text-xs leading-relaxed opacity-90">{errorMessage}</p>
 
               {isMissingKey && (
                 <div
-                  className={`p-3.5 text-xs space-y-2 ${
+                  className={`p-3 text-xs space-y-1.5 border ${
                     isNews
-                      ? 'bg-[#ede6d6] border border-stone-800 font-serif'
-                      : 'bg-slate-900/80 border border-slate-800 rounded-xl text-slate-300'
+                      ? 'bg-[#f4efe4] border-stone-800'
+                      : 'bg-black/20 border-white/5 rounded-xl'
                   }`}
                 >
-                  <p className="font-semibold">How to configure the AI key:</p>
-                  <ol className="list-decimal pl-4 space-y-1 opacity-90">
-                    <li>In Google AI Studio, open the <strong>Settings &gt; Secrets</strong> panel.</li>
-                    <li>Add a secret named <code className="font-mono text-xs font-bold">GEMINI_API_KEY</code>.</li>
-                    <li>Or set <code className="font-mono text-xs font-bold">GEMINI_API_KEY</code> in your server's <code className="font-mono text-xs font-bold">.env</code> file.</li>
-                  </ol>
+                  <p className="font-semibold text-amber-400">
+                    {language === 'id' ? 'Kunci API Diperlukan:' : 'API Key Required:'}
+                  </p>
+                  <p className="opacity-80">
+                    {language === 'id'
+                      ? 'Pastikan variabel GEMINI_API_KEY sudah disetel di environment atau Secrets panel.'
+                      : 'Ensure GEMINI_API_KEY is configured in your project settings.'}
+                  </p>
                 </div>
               )}
 
@@ -810,7 +894,7 @@ export default function App() {
                   }`}
                 >
                   <RotateCcw className="w-3.5 h-3.5" />
-                  <span>Try Again</span>
+                  <span>{language === 'id' ? 'Coba Lagi' : 'Try Again'}</span>
                 </button>
                 <button
                   type="button"
@@ -821,7 +905,7 @@ export default function App() {
                       : 'bg-slate-800/80 hover:bg-slate-700/80 text-slate-300 rounded-lg border border-slate-700/60'
                   }`}
                 >
-                  Start Over
+                  {language === 'id' ? 'Mulai Ulang' : 'Start Over'}
                 </button>
               </div>
             </div>
@@ -859,8 +943,8 @@ export default function App() {
                     {isCats && '🐾 '}
                     {isPink && '♡ '}
                     {isSpace && '🚀 '}
-                    {isNews && 'EDITION: '}
-                    {LEVEL_DESCRIPTIONS[result.level]?.badge || result.level.toUpperCase()}
+                    {isNews && (language === 'id' ? 'EDISI: ' : 'EDITION: ')}
+                    {t.levels[result.level].badge}
                   </span>
                 </div>
 
@@ -873,17 +957,17 @@ export default function App() {
                         ? 'border-2 border-stone-800 bg-[#ede6d6] hover:bg-[#e4ddcc] text-stone-900 font-serif shadow-[1px_1px_0px_#292524]'
                         : currentThemeConfig.buttonSecondary + ' ' + currentThemeConfig.cornerStyle
                     }`}
-                    title="Copy explanation"
+                    title={t.results.copy}
                   >
                     {copied ? (
                       <>
                         <Check className="w-3.5 h-3.5 text-emerald-400" />
-                        <span className="text-emerald-400 font-medium">Copied!</span>
+                        <span className="text-emerald-400 font-medium">{t.results.copied}</span>
                       </>
                     ) : (
                       <>
                         <Copy className="w-3.5 h-3.5 opacity-70" />
-                        <span>Copy</span>
+                        <span>{t.results.copy}</span>
                       </>
                     )}
                   </button>
@@ -898,7 +982,7 @@ export default function App() {
                     }`}
                   >
                     <RotateCcw className="w-3.5 h-3.5 opacity-70" />
-                    <span>Clear</span>
+                    <span>{t.results.clear}</span>
                   </button>
                 </div>
               </div>
@@ -916,7 +1000,7 @@ export default function App() {
                     isNews ? 'text-stone-900 font-bold uppercase' : currentThemeConfig.textMuted
                   }`}
                 >
-                  {isNews ? 'DISPATCH SUBJECT:' : 'Topic:'}
+                  {isNews ? t.results.topicLabelNews : t.results.topicLabel}
                 </span>
                 <span
                   className={`font-medium italic ${
@@ -943,9 +1027,7 @@ export default function App() {
                     isNews ? 'font-serif italic text-stone-800' : currentThemeConfig.textMuted
                   }`}
                 >
-                  {isNews
-                    ? 'Examine this dispatch at another depth:'
-                    : 'Try another explanation depth for this topic:'}
+                  {isNews ? t.results.switchPromptNews : t.results.switchPrompt}
                 </span>
                 <div className="flex flex-wrap gap-2">
                   {(['simple', 'intermediate', 'detailed'] as ExplanationLevel[]).map((lvl) => {
@@ -955,7 +1037,7 @@ export default function App() {
                         key={lvl}
                         type="button"
                         onClick={() => switchLevelAndReExplain(lvl)}
-                        className={`text-xs px-3 py-1.5 capitalize transition-all min-h-[36px] ${
+                        className={`text-xs px-3 py-1.5 transition-all min-h-[36px] ${
                           isNews
                             ? 'bg-[#ede6d6] hover:bg-[#e4ddcc] border-2 border-stone-800 text-stone-900 font-serif shadow-[1px_1px_0px_#292524]'
                             : currentThemeConfig.buttonSecondary +
@@ -963,7 +1045,7 @@ export default function App() {
                               currentThemeConfig.cornerStyle
                         }`}
                       >
-                        {LEVEL_DESCRIPTIONS[lvl]?.title || lvl} &rarr;
+                        {t.levels[lvl].title} {t.results.reExplainSuffix}
                       </button>
                     );
                   })}
@@ -978,7 +1060,7 @@ export default function App() {
       <footer
         className={`mt-auto py-4 px-4 text-center text-xs border-t transition-colors ${
           isNews
-            ? 'border-stone-800/80 bg-[#ede6d6] font-serif text-stone-700'
+            ? 'border-stone-800/80 bg-[#ede6d6] text-stone-800 font-serif'
             : 'border-white/5 text-slate-500'
         }`}
       >
@@ -997,13 +1079,14 @@ export default function App() {
         </p>
       </footer>
 
-      {/* Share and App Install Modal */}
+      {/* Share & Install Modal */}
       <ShareModal
         isOpen={isShareModalOpen}
         onClose={() => setIsShareModalOpen(false)}
         theme={theme}
         deferredPrompt={deferredPrompt}
         onInstall={handleInstall}
+        language={language}
       />
     </div>
   );

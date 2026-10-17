@@ -79,7 +79,7 @@ export default async function handler(req: any, res: any) {
   }
 
   try {
-    const { question, level = 'simple' } = req.body || {};
+    const { question, level = 'simple', language = 'en' } = req.body || {};
 
     if (!question || typeof question !== 'string' || !question.trim()) {
       return res.status(400).json({ error: 'Please enter a valid question or topic to explain.' });
@@ -96,7 +96,13 @@ export default async function handler(req: any, res: any) {
 
     const validLevels = ['simple', 'intermediate', 'detailed'];
     const selectedLevel = validLevels.includes(level) ? level : 'simple';
-    const systemPrompt = PROMPTS[selectedLevel];
+    const basePrompt = PROMPTS[selectedLevel];
+    const targetLang = language === 'id' ? 'id' : 'en';
+    const langDirective = targetLang === 'id'
+      ? '\n\nCRITICAL LANGUAGE INSTRUCTION: You MUST generate your ENTIRE explanation in INDONESIAN (Bahasa Indonesia). All section headers, analogies, and explanations must be written in natural Indonesian.'
+      : '\n\nCRITICAL LANGUAGE INSTRUCTION: You MUST generate your ENTIRE explanation in ENGLISH. All section headers, analogies, and explanations must be written in English.';
+
+    const systemPrompt = basePrompt + langDirective;
 
     let lastError: any = null;
     let explanation: string | undefined;
